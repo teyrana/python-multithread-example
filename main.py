@@ -22,10 +22,13 @@ class worker( threading.Thread):
     def run( self):
         print("        => starting worker: "+str(self.id))
         while self.running.is_set():
-            while not self._pending.empty():
-                nextMessage = self._pending.get()
-                print("        => {}: {}".format( self.name, nextMessage))
-            time.sleep(0.8)
+            try:
+                nextMessage = self._pending.get( True, 1.0)
+                if nextMessage:
+                    print("        => {}: {}".format( self.name, nextMessage))
+            except queue.Empty:
+                # routine occurence. ignore
+                continue
 
 
 
@@ -62,14 +65,14 @@ class coordinator( threading.Thread):
         time.sleep(1.5)
         self.enqueue( "msg1")
         print("    >> msg1 end.")
-        time.sleep(1.5)
-        self.enqueue( "msg2")
-        print("    >> msg2 end.")
-        time.sleep(1.5)
-        self.enqueue( "msg3")
-        print("    >> msg3 end.")
+        # time.sleep(1.5)
+        # self.enqueue( "msg2")
+        # print("    >> msg2 end.")
+        # time.sleep(1.5)
+        # self.enqueue( "msg3")
+        # print("    >> msg3 end.")
 
-        time.sleep(2.0)
+        time.sleep(1.0)
         print("    >> Halting all threads.")
         self.halt()
 
